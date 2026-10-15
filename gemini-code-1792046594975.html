@@ -1,0 +1,1062 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PalovMC — Ultra Voxel Donat & Do'kon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>
+:root{
+  --ink:#090b10; --panel:#161922; --panel2:#202531;
+  --stone:#c6c6c6; --stone-d:#8b8b8b; --stone-dd:#373737;
+  --grass:#6be04a; --grass-d:#3e7d24; --dirt:#85592f; --dirt-d:#4d3019;
+  --gold:#ffd23f; --carrot:#ff7b1a; --dia:#4de8dc; --red:#ff4444; --purple:#c57bff;
+  --white:#f6f6f6; --text:#eef2f6; --mute:#9aa3ad;
+  --px:'Press Start 2P',ui-monospace,monospace;
+  --vt:'VT323',ui-monospace,monospace;
+  --gx:max(16px, env(safe-area-inset-left, 0px));
+  --gr:max(16px, env(safe-area-inset-right, 0px));
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:clip}
+body{margin:0;background:var(--ink);color:var(--text);font:400 22px/1.25 var(--vt);overflow-x:hidden;image-rendering:pixelated;user-select:none}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,.slot:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+img.sp{image-rendering:pixelated;display:block}
+.wrap{padding-left:var(--gx);padding-right:var(--gr);max-width:1200px;margin:0 auto;position:relative}
+h2{font:400 clamp(1.05rem,3.6vw,1.75rem)/1.4 var(--px);margin:0;color:var(--white);text-shadow:3px 3px 0 #000;text-wrap:balance}
+.lab{font:400 11px/1.4 var(--px);color:var(--gold);letter-spacing:.06em;text-transform:uppercase;text-shadow:2px 2px 0 #000}
+
+/* Minecraft Pixel Tugmalar */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:10px 20px;background:#8b8b8b;color:#fff;font:400 11px/1.3 var(--px);text-shadow:2px 2px 0 #3f3f3f;border:0;box-shadow:inset -4px -4px 0 #555,inset 4px 4px 0 #c9c9c9,0 0 0 3px #000;text-transform:uppercase;transition:transform .08s,background .15s}
+.btn:hover{background:#7a86c9;box-shadow:inset -4px -4px 0 #4a5496,inset 4px 4px 0 #b4bdf5,0 0 0 3px #fff}
+.btn:active{transform:translateY(3px)}
+.btn.g{background:#4e9a2e;box-shadow:inset -4px -4px 0 #2b5f16,inset 4px 4px 0 #8fdc66,0 0 0 3px #000}
+.btn.g:hover{background:#63b83c;box-shadow:inset -4px -4px 0 #2b5f16,inset 4px 4px 0 #b6f593,0 0 0 3px #fff}
+.btn.y{background:#e0a412;box-shadow:inset -4px -4px 0 #8a6200,inset 4px 4px 0 #ffe27a,0 0 0 3px #000;color:#241600;text-shadow:none}
+.btn.y:hover{background:#ffd23f;box-shadow:inset -4px -4px 0 #8a6200,inset 4px 4px 0 #fff3b0,0 0 0 3px #fff}
+.btn.r{background:#c93528;box-shadow:inset -4px -4px 0 #70160e,inset 4px 4px 0 #ff8c80,0 0 0 3px #000}
+.btn.r:hover{background:#e64537;box-shadow:inset -4px -4px 0 #70160e,inset 4px 4px 0 #ffb3ab,0 0 0 3px #fff}
+
+/* Orqa fon va Effektlar Canvaslari */
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:-2;image-rendering:pixelated;background:#58aaff}
+#fx{position:fixed;inset:0;width:100%;height:100%;z-index:80;pointer-events:none}
+
+/* Yuqori Navigatsiya */
+nav{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;gap:12px;padding:calc(10px + env(safe-area-inset-top,0px)) var(--gr) 10px var(--gx);background:rgba(10,12,18,.86);border-bottom:4px solid #000;backdrop-filter:blur(6px)}
+nav .brand{display:flex;align-items:center;gap:10px;font:400 14px var(--px);color:var(--gold);text-shadow:2px 2px 0 #000;margin-right:auto}
+nav .links{display:flex;gap:4px}
+nav .links a{font:400 10px var(--px);padding:10px 11px;color:#fff;text-shadow:2px 2px 0 #000}
+nav .links a:hover{background:rgba(255,255,255,.14);color:var(--gold)}
+.online-pill{display:flex;align-items:center;gap:8px;background:#112615;padding:6px 10px;box-shadow:inset 0 0 0 2px #2b5f16,0 0 0 2px #000;font:400 9px var(--px);color:var(--grass)}
+.online-dot{width:8px;height:8px;background:var(--grass);box-shadow:0 0 8px var(--grass);animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.3}}
+.xpc{font:400 10px var(--px);color:var(--grass);text-shadow:2px 2px 0 #000;white-space:nowrap}
+.mute{width:42px;height:42px;background:#222;border:0;box-shadow:inset -3px -3px 0 #000,inset 3px 3px 0 #555;font:400 10px var(--px);color:#fff}
+@media (max-width:860px){nav .links{display:none}.online-pill{display:none}}
+
+/* HERO */
+.hero{position:relative;padding:calc(108px + env(safe-area-inset-top,0px)) 0 110px;text-align:center}
+.season-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(15,18,26,.85);padding:8px 14px;box-shadow:0 0 0 3px #000,inset 0 0 0 2px var(--gold);font:400 10px var(--px);color:var(--gold);margin-bottom:14px}
+.logo{font:400 clamp(2rem,11vw,6.4rem)/1 var(--px);margin:0;display:flex;justify-content:center;letter-spacing:.02em;padding:.15em 0 .25em;cursor:pointer}
+.logo span{display:inline-block;animation:drop .95s cubic-bezier(.3,1.5,.5,1) backwards;animation-delay:calc(var(--i)*.08s);transition:transform .18s}
+.logo span:hover{transform:translateY(-.22em) rotate(-5deg) scale(1.06)}
+.logo .a{color:#ffd23f;text-shadow:.04em .04em 0 #9e5808,.08em .08em 0 #824605,.12em .12em 0 #663602,.16em .16em 0 #472500,.26em .26em .08em rgba(0,0,0,.55)}
+.logo .b{color:#7cf05a;text-shadow:.04em .04em 0 #3a8a22,.08em .08em 0 #2e701a,.12em .12em 0 #225412,.16em .16em 0 #173b0b,.26em .26em .08em rgba(0,0,0,.55)}
+@keyframes drop{from{transform:translateY(-110vh) rotate(25deg)}}
+.plate{display:inline-block;max-width:680px;margin:10px auto 0;padding:14px 22px;background:rgba(8,10,16,.82);box-shadow:inset 0 0 0 3px #000,inset 0 0 0 6px rgba(255,255,255,.15);color:#fff;font-size:clamp(21px,3.2vw,26px)}
+.ip{display:inline-flex;align-items:stretch;margin:26px auto 0;max-width:100%;flex-wrap:wrap;justify-content:center;background:#0b0d12;box-shadow:0 0 0 4px #000,0 0 0 8px #555}
+.ip div{padding:12px 18px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0}
+.ip small{font:400 9px var(--px);color:var(--mute)}
+.ip b{font:400 clamp(.9rem,3vw,1.3rem) var(--px);color:var(--dia);overflow-wrap:anywhere}
+.cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+.hint-box{margin-top:26px;display:inline-flex;flex-direction:column;align-items:center;gap:8px;background:rgba(10,12,18,.82);padding:12px 20px;box-shadow:0 0 0 3px #000,inset 0 0 0 2px #444}
+.hint{font:400 11px/1.5 var(--px);color:var(--gold);text-shadow:2px 2px 0 #000;cursor:pointer;animation:bob 1.5s ease-in-out infinite}
+.hint2{font-size:20px;color:#d6dde6}
+@keyframes bob{50%{transform:translateY(5px)}}
+
+/* Zamin bloki chizig'i */
+.ground{height:48px;background-repeat:repeat-x;background-size:64px 48px;image-rendering:pixelated;background-color:#4d3019;position:relative;z-index:2;box-shadow:0 6px 0 rgba(0,0,0,.35)}
+
+.sec{background:rgba(11,14,21,.92);padding:clamp(54px,8vh,90px) 0;position:relative}
+.sec-h{display:flex;flex-direction:column;gap:12px;margin-bottom:34px}
+.sec-h p{margin:0;max-width:65ch;color:#c7ced6}
+
+/* Chegirma lentasi */
+.tapew{overflow:hidden;padding:14px 0;position:relative;z-index:3;margin:-10px 0}
+.tape{background:linear-gradient(90deg,#ffd23f,#ff922b,#ffd23f);color:#1f1200;overflow:hidden;white-space:nowrap;transform:rotate(-1.4deg) scale(1.03);box-shadow:0 6px 0 #000,0 -4px 0 #000}
+.tape div{display:inline-flex;gap:28px;padding:11px 0;will-change:transform;font:400 13px var(--px)}
+.tape i{font-style:normal;opacity:.55}
+
+/* Donat Kartalari (6 ta Milliy + Minecraft Rank) */
+.ranks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:24px;align-items:stretch}
+.rank{--c:#55ff55;position:relative;min-width:0;background:var(--panel);padding:22px 20px 20px;display:flex;flex-direction:column;gap:14px;box-shadow:inset -4px -4px 0 #090b10,inset 4px 4px 0 #363c49,0 0 0 4px #000;transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .14s ease-out}
+.rank.top{background:linear-gradient(180deg,#261738,#161922);box-shadow:inset -4px -4px 0 #090b10,inset 4px 4px 0 #7b46cc,0 0 0 4px #000,0 0 35px rgba(197,123,255,.4)}
+.rank .glint{position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,210,63,.28) 45%,rgba(255,255,255,.22) 50%,transparent 62%);background-size:320% 100%;animation:glint 3s linear infinite;mix-blend-mode:screen}
+@keyframes glint{from{background-position:130% 0}to{background-position:-130% 0}}
+.rank .tagr{position:absolute;top:-15px;right:14px;background:#d63a2f;color:#fff;font:400 9px var(--px);padding:6px 9px;box-shadow:0 0 0 3px #000}
+.rank h3{margin:0;font:400 17px/1.3 var(--px);color:var(--c);text-shadow:3px 3px 0 #000;display:flex;align-items:center;gap:12px}
+.chat{background:rgba(0,0,0,.6);padding:8px 10px;font-size:21px;overflow-wrap:anywhere;min-height:48px;border-left:4px solid var(--c)}
+.chat b{color:var(--c);font-weight:400}
+.perks{list-style:none;margin:0;padding:0;display:grid;gap:7px;flex:1}
+.perks li{display:flex;gap:10px;align-items:flex-start;color:#e3e8ee}
+.perks li::before{content:"";flex:0 0 13px;height:13px;margin-top:5px;background:var(--c);box-shadow:inset -3px -3px 0 rgba(0,0,0,.45),0 0 0 2px #000}
+.price-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding-top:6px;border-top:2px solid rgba(255,255,255,.08)}
+.price{font:400 15px var(--px);color:var(--gold);text-shadow:2px 2px 0 #000}
+.price del{display:block;font:400 18px var(--vt);color:var(--mute);text-shadow:none}
+
+/* Do'kon Inventari */
+.inv{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:26px;align-items:start}
+.gui{background:var(--stone);color:#373737;padding:18px;box-shadow:inset -4px -4px 0 #555,inset 4px 4px 0 #fff,0 0 0 4px #000;min-width:0}
+.gui h4{margin:0 0 12px;font:400 12px var(--px);color:#2b2b2b;display:flex;justify-content:space-between}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.slot{position:relative;aspect-ratio:1;background:#8b8b8b;border:0;padding:4px;box-shadow:inset 4px 4px 0 #373737,inset -4px -4px 0 #fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0}
+.slot:hover,.slot.sel{background:#a5b4ff}
+.slot.sel{box-shadow:inset 4px 4px 0 #373737,inset -4px -4px 0 #fff,0 0 0 4px var(--gold)}
+.slot img{width:50%;max-width:78px;transition:transform .15s}
+.slot:hover img{transform:translateY(-5px) scale(1.1)}
+.slot span{font-size:18px;color:#181818;line-height:1;padding:0 4px;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slot .pc{font-size:17px;color:#6e1a00;font-weight:700}
+.slot .off{position:absolute;top:4px;right:4px;background:#d63a2f;color:#fff;font:400 8px var(--px);padding:3px 5px}
+.det{background:var(--panel);padding:22px;display:flex;flex-direction:column;gap:14px;box-shadow:inset -4px -4px 0 #090b10,inset 4px 4px 0 #363c49,0 0 0 4px #000;min-width:0}
+.det .big{display:flex;justify-content:center;padding:16px;background:radial-gradient(circle,#384050,#12151c);box-shadow:inset 0 0 0 3px #000}
+.det .big img{width:120px;animation:float 2.4s ease-in-out infinite;filter:drop-shadow(0 10px 0 rgba(0,0,0,.45))}
+@keyframes float{50%{transform:translateY(-10px) rotate(4deg)}}
+.det h3{margin:0;font:400 15px/1.4 var(--px);color:var(--c,#fff);text-shadow:2px 2px 0 #000}
+.det ul{margin:0;padding:0;list-style:none;color:#c0a6ff;display:grid;gap:4px}
+.det .pr{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.det .old{text-decoration:line-through;color:var(--mute)}
+.det .now{font:400 16px var(--px);color:var(--gold)}
+.cd{display:flex;gap:10px;flex-wrap:wrap}
+.cd div{background:#0b0d12;padding:8px 12px;min-width:64px;text-align:center;box-shadow:inset 0 0 0 2px #444,0 0 0 2px #000}
+.cd b{display:block;font:400 14px var(--px);color:var(--gold);font-variant-numeric:tabular-nums}
+.cd small{font-size:16px;color:var(--mute)}
+
+/* 🍲 QOZON-CRAFT: 3x3 MINECRAFT CRAFTING TABLE */
+.craft-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px;align-items:center}
+.craft-gui{background:var(--stone);color:#2b2b2b;padding:20px;box-shadow:inset -4px -4px 0 #555,inset 4px 4px 0 #fff,0 0 0 4px #000}
+.craft-board{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;margin:14px 0}
+.craft-grid{display:grid;grid-template-columns:repeat(3,64px);gap:6px}
+.c-slot{width:64px;height:64px;background:#8b8b8b;border:0;box-shadow:inset 4px 4px 0 #373737,inset -4px -4px 0 #fff;display:grid;place-items:center;padding:6px}
+.c-slot:hover{background:#a5b4ff}
+.c-slot img{width:42px;height:42px}
+.craft-arrow{font:400 24px var(--px);color:#373737}
+.craft-out{width:80px;height:80px;background:#8b8b8b;box-shadow:inset 4px 4px 0 #373737,inset -4px -4px 0 #fff,0 0 0 3px #000;display:grid;place-items:center;position:relative;cursor:pointer}
+.craft-out.ready{background:#ffe27a;animation:pls 1s infinite}
+.pantry{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:3px solid #8b8b8b}
+.p-item{display:flex;align-items:center;gap:8px;background:#8b8b8b;border:0;padding:6px 10px;box-shadow:inset 3px 3px 0 #373737,inset -3px -3px 0 #fff;color:#111;font-size:19px}
+.p-item.active{background:#ffd23f;box-shadow:0 0 0 3px #000}
+.p-item img{width:26px;height:26px}
+
+/* Jonli Xaridlar va Qadamlar */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:24px;counter-reset:s}
+.step{background:var(--panel2);padding:20px;box-shadow:inset -4px -4px 0 #11141a,inset 4px 4px 0 #444b58,0 0 0 4px #000}
+.step::before{counter-increment:s;content:counter(s);display:grid;place-items:center;width:42px;height:42px;margin-bottom:12px;background:var(--grass);color:#10300a;font:400 15px var(--px);box-shadow:inset -4px -4px 0 var(--grass-d),inset 4px 4px 0 #b6f593,0 0 0 3px #000}
+.step h3{margin:0 0 8px;font:400 12px/1.5 var(--px);color:#fff}
+.step p{margin:0;color:#c7ced6}
+
+footer{background:#120c07;padding:50px 0 130px;position:relative;z-index:1}
+footer .row{display:flex;gap:26px;flex-wrap:wrap;justify-content:space-between}
+footer .soc{display:grid;gap:8px}
+footer .soc b{font:400 12px var(--px);color:var(--dia)}
+footer small{display:block;margin-top:30px;color:var(--mute);font-size:18px;max-width:72ch}
+
+/* Savat Oynasi + Skin Preview + Promokod */
+#cartbtn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(48px + env(safe-area-inset-bottom,0px));z-index:70}
+#cartbtn .n{background:#d63a2f;color:#fff;padding:3px 7px;box-shadow:0 0 0 2px #000}
+
+/* 🍲🔥 PASTKI JAHLDOR QOZON-BOMBA CHAQIRISH TUGMASI */
+#qozon-trigger{position:fixed;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(48px + env(safe-area-inset-bottom,0px));z-index:70}
+
+#drawer{position:fixed;top:0;right:0;bottom:0;width:min(450px,100vw);z-index:90;background:var(--stone);color:#2b2b2b;padding:calc(18px + env(safe-area-inset-top,0px)) max(18px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) 18px;transform:translateX(105%);transition:transform .32s cubic-bezier(.2,.9,.2,1);box-shadow:-6px 0 0 #000,inset 4px 4px 0 #fff;overflow:auto;display:flex;flex-direction:column;gap:14px}
+#drawer.open{transform:none}
+#veil{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:85;opacity:0;pointer-events:none;transition:opacity .3s}
+#veil.open{opacity:1;pointer-events:auto}
+#drawer h4{margin:0;font:400 13px var(--px);display:flex;justify-content:space-between;align-items:center}
+#drawer label{font:400 9px var(--px);display:block;margin-bottom:6px;color:#222}
+.nick-row{display:flex;gap:10px;align-items:center}
+#skin-head{width:46px;height:46px;background:#333;box-shadow:0 0 0 3px #000;image-rendering:pixelated;flex:none}
+#nick,#promo{width:100%;padding:9px 12px;font:400 22px var(--vt);background:#0d0f14;color:#fff;border:0;box-shadow:inset 3px 3px 0 #444,0 0 0 3px #fff}
+.promo-row{display:flex;gap:8px}
+.lines{display:grid;gap:8px}
+.line{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;background:#a8a8a8;padding:8px;box-shadow:inset 3px 3px 0 #373737,inset -3px -3px 0 #e8e8e8}
+.line img{width:36px}
+.line b{font-weight:400;font-size:20px;line-height:1.05;color:#111}
+.line .q{display:flex;align-items:center;gap:6px;margin-top:4px}
+.line .q button{width:26px;height:26px;border:0;background:#444;color:#fff;font:400 11px var(--px)}
+.line .lp{font:400 10px var(--px);color:#5a1a00;text-align:right}
+.empty{padding:16px;text-align:center;background:#a8a8a8;box-shadow:inset 3px 3px 0 #373737}
+.tot{display:flex;justify-content:space-between;font:400 12px var(--px);padding-top:10px;border-top:4px solid #8b8b8b}
+#order{width:100%;min-height:130px;font:400 19px/1.15 var(--vt);background:#000;color:#9cff7a;border:0;padding:10px;box-shadow:inset 3px 3px 0 #555;resize:vertical}
+.note{font-size:19px;color:#4a2a00;background:#ffe9a8;padding:10px;box-shadow:inset 3px 3px 0 #c79a21}
+
+/* Tooltip, Toast & XP Bar */
+#tip{position:fixed;left:0;top:0;z-index:95;pointer-events:none;background:rgba(16,0,20,.95);padding:8px 12px;box-shadow:0 0 0 3px #000,0 0 0 5px #4a128c;max-width:280px;display:none;font-size:21px;line-height:1.1}
+#tip .t{color:#fff}#tip .l{color:#b79cff}#tip .p{color:var(--gold);margin-top:5px}
+#toast{position:fixed;top:calc(74px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));z-index:97;display:grid;gap:10px;justify-items:start;pointer-events:none}
+.tst{display:flex;gap:12px;align-items:center;background:#201a14;padding:10px 16px 10px 10px;box-shadow:0 0 0 3px #000,inset 0 0 0 3px #6b5330;transform:translateX(-130%);transition:transform .45s cubic-bezier(.2,.9,.2,1);max-width:min(350px,calc(100vw - 24px))}
+.tst.in{transform:none}
+.tst .ic{width:42px;height:42px;background:#4a3a20;display:grid;place-items:center;flex:none}
+.tst .ic img{width:30px}
+.tst b{display:block;font:400 9px var(--px);color:var(--gold);margin-bottom:4px}
+.tst span{color:#fff;font-size:20px;line-height:1}
+
+#xp{position:fixed;left:0;right:0;bottom:0;z-index:65;padding:0 max(16px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));pointer-events:none}
+#xp .lv{text-align:center;font:400 12px var(--px);color:#7cf05a;text-shadow:2px 0 #000,-2px 0 #000,0 2px #000,0 -2px #000;margin-bottom:4px}
+#xp .bar{height:14px;background:#111;box-shadow:inset 0 0 0 2px #000,0 0 0 2px #555;position:relative;overflow:hidden;max-width:600px;margin:0 auto}
+#xp .fill{height:100%;width:0;background:linear-gradient(#b6ff7a,#4ec21f);box-shadow:inset 0 -3px 0 rgba(0,0,0,.25)}
+#xp.flash .fill{filter:brightness(1.8)}
+
+.js .rv{opacity:0;transform:translateY(38px);transition:opacity .55s,transform .65s cubic-bezier(.3,1.5,.5,1);transition-delay:var(--rd,0s)}
+.js .rv.in{opacity:1;transform:none}
+@keyframes pls{50%{transform:scale(1.06)}}
+html.lock{overflow:hidden}
+
+/* Mini-Game Modal & Giant Angry Qozon-Bomba */
+#game{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.86);display:none;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) var(--gr) max(16px,env(safe-area-inset-bottom,0px)) var(--gx)}
+#game.open{display:flex}
+.gp{width:min(760px,100%);background:#1b1f27;padding:16px;box-shadow:inset -4px -4px 0 #0b0d12,inset 4px 4px 0 #3a404c,0 0 0 4px #000;display:grid;gap:12px;min-width:0}
+.gp .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.gp h3{margin:0;font:400 12px/1.5 var(--px);color:var(--gold)}
+.gp p{margin:0;color:#b5bcc4;font-size:19px}
+#gc{width:100%;height:auto;aspect-ratio:640/240;image-rendering:pixelated;background:#bfe3ff;display:block;box-shadow:0 0 0 3px #000;touch-action:none;cursor:pointer}
+.ctl{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ctl .btn{min-height:54px;touch-action:none}
+
+#flash{position:fixed;inset:0;background:radial-gradient(circle,#fff,#ffae00);z-index:120;opacity:0;pointer-events:none}
+#flash.go{animation:fl 1.1s ease-out}
+@keyframes fl{0%{opacity:1}100%{opacity:0}}
+#scorch{position:fixed;inset:0;z-index:55;pointer-events:none;opacity:0;transition:opacity .6s;background:radial-gradient(circle at 50% 45%,rgba(255,110,20,.42),rgba(10,6,4,.78) 70%)}
+body.boomed #scorch{opacity:1}
+body.boomed nav{background:transparent;border-bottom-color:transparent;backdrop-filter:none}
+body.boomed .sec,body.boomed footer{background:transparent}
+.sec,footer,nav{transition:background .5s,border-color .5s}
+#boomhud{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);z-index:98;text-align:center;font:400 clamp(.95rem,3.4vw,1.8rem)/1.7 var(--px);color:#fff;text-shadow:4px 4px 0 #000;pointer-events:none;width:min(92vw,760px)}
+#potc{position:fixed;left:50%;bottom:0;width:min(80vw,560px);height:auto;aspect-ratio:160/150;image-rendering:pixelated;z-index:105;pointer-events:none;transform:translate(-50%,112%);transform-origin:50% 100%;display:none}
+
+@media (max-width:860px){.inv,.craft-wrap{grid-template-columns:1fr}}
+@media (max-width:480px){body{font-size:20px}.slot span{font-size:16px}.btn{font-size:10px}}
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add('js')</script>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<nav>
+  <a class="brand" href="#top"><img class="sp" id="navsp" width="32" height="32" alt=""><span>PalovMC</span></a>
+  <div class="links">
+    <a href="#donat">Donatlar</a>
+    <a href="#dokon">Do'kon</a>
+    <a href="#craft">Qozon-Craft</a>
+    <a href="#qadam">Qoidalar</a>
+  </div>
+  <div class="online-pill"><span class="online-dot"></span><span id="onl">412 ONLINE</span></div>
+  <span class="xpc" id="xpc">XP: 0</span>
+  <button class="mute" id="mute" type="button">SND</button>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="season-badge">🍲 YANGI MAVSUM: DEVZIRA DUEL & ANARCHY</div>
+    <h1 class="logo" id="logo-boom" title="Meni bosib ko'r!" aria-label="PalovMC">
+      <span class="a" style="--i:0">P</span><span class="a" style="--i:1">A</span><span class="a" style="--i:2">L</span><span class="a" style="--i:3">O</span><span class="a" style="--i:4">V</span><span class="b" style="--i:5">M</span><span class="b" style="--i:6">C</span>
+    </h1>
+    <div class="plate">O'zbekistondagi #1 Voxel Minecraft Serveri. Palovdek to'yimli, olovdek qizg'in!</div><br>
+    <div class="ip">
+      <div><small>SERVER IP (1.16.5 - 1.21)</small><b id="ipt">play.palovmc.uz</b></div>
+      <button class="btn g" id="copyip" type="button">Nusxalash</button>
+    </div>
+    <div class="cta">
+      <a class="btn y" href="#donat">👑 Donat Darajalari</a>
+      <a class="btn" href="#craft">🍲 Promokod Kraft Qilish</a>
+      <button class="btn r" id="hero-boom" type="button">🧨 Jahldor Qozon!</button>
+    </div>
+    <div class="hint-box">
+      <div class="hint" id="hint" role="button" tabindex="0">▶ [SPACE / PROBEL] BOSING: OSHPAZ BOBO O'YINI!</div>
+      <div class="hint2">Yashil XP sharlarni yig'ing • Pastga skroll qiling — kun tunga aylanadi!</div>
+    </div>
+  </div>
+</header>
+
+<div class="ground" aria-hidden="true"></div>
+<div class="tapew" aria-hidden="true"><div class="tape"><div id="tape"></div></div></div>
+
+<!-- 1. DONAT RANKLAR -->
+<section class="sec" id="donat">
+  <div class="wrap">
+    <div class="sec-h">
+      <span class="lab rv">Milliy & Epic Statuslar</span>
+      <h2 class="rv">Donat Darajangizni Tanlang</h2>
+      <p class="rv">Har bir daraja butun umrga beriladi. Savatda nikingizni yozsangiz, kartochkadagi chat namunasi darhol sizning nikingizda ko'rinadi!</p>
+    </div>
+    <div class="ranks" id="ranks"></div>
+  </div>
+</section>
+
+<div class="ground" aria-hidden="true"></div>
+
+<!-- 2. MINECRAFT INVENTAR DO'KONI -->
+<section class="sec" id="dokon">
+  <div class="wrap">
+    <div class="sec-h">
+      <span class="lab rv">Chegirmali Sandiq</span>
+      <h2 class="rv">Server Do'koni (-30% Aksiya)</h2>
+      <div class="cd rv" id="cd" aria-label="Chegirma tugashiga qolgan vaqt"></div>
+    </div>
+    <div class="inv">
+      <div class="gui rv">
+        <h4><span>Do'kon Inventari</span><span>9 Slot</span></h4>
+        <div class="slots" id="slots"></div>
+      </div>
+      <div class="det rv" id="det" style="--rd:.12s"></div>
+    </div>
+  </div>
+</section>
+
+<div class="ground" aria-hidden="true"></div>
+
+<!-- 3. QOZON-CRAFT: 3x3 CRAFTING TABLE -->
+<section class="sec" id="craft">
+  <div class="wrap">
+    <div class="craft-wrap">
+      <div class="sec-h" style="margin:0">
+        <span class="lab rv">Eksklyuziv Interaktiv</span>
+        <h2 class="rv">Qozon-Craft: 30% Chegirma Pishiring!</h2>
+        <p class="rv">Minecraft hunarmandchilik stoliga <b>1 ta Devzira Guruch</b>, <b>1 ta Sariq Sabzi</b> va <b>1 ta Qo'y Go'shti</b> joylashtiring. Haqiqiy Choyxona Palovi tayyor bo'lgach, sizga maxsus <b>-30% Promokod</b> beriladi!</p>
+        <div class="rv" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+          <button class="btn y" id="auto-recipe" type="button">✨ Retseptni Avto-Terish</button>
+          <button class="btn" id="clear-craft" type="button">Tozalash</button>
+        </div>
+      </div>
+
+      <div class="craft-gui rv">
+        <div style="font:400 11px var(--px);margin-bottom:8px">HUNARMANDCHILIK STOLI (3x3)</div>
+        <div class="craft-board">
+          <div class="craft-grid" id="cgrid"></div>
+          <div class="craft-arrow">➜</div>
+          <button class="craft-out" id="cout" type="button" title="Natijani olish"></button>
+        </div>
+        <div style="font:400 9px var(--px);color:#444">MASALLIQLAR (Tanlab katakka bosing):</div>
+        <div class="pantry" id="pantry"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="ground" aria-hidden="true"></div>
+
+<!-- 4. QADAMLAR -->
+<section class="sec" id="qadam">
+  <div class="wrap">
+    <div class="sec-h"><span class="lab rv">3 Oson Qadam</span><h2 class="rv">Qanday Xarid Qilinadi?</h2></div>
+    <div class="steps">
+      <div class="step rv"><h3>Nikingizni kiriting</h3><p>Savatni ochib Minecraft nikingizni yozing — tizim sizning skin rasmingizni avtomatik topadi.</p></div>
+      <div class="step rv" style="--rd:.1s"><h3>Promokod qo'llang</h3><p>Qozon-Craftda pishirilgan <b>PALOVCRAFT30</b> yoki <b>OSH20</b> kodini kiritib 30% gacha chegirma oling.</p></div>
+      <div class="step rv" style="--rd:.2s"><h3>1-Klikda Buyurtma</h3><p>Tayyor chek matnini nusxalab Telegram yoki Discord orqali adminga yuboring va 3 soniyada statusni oling!</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="row">
+      <div class="soc">
+        <span class="lab">Rasmiy Jamiyat</span>
+        <div>Telegram: <b>@PalovMC_Uz</b></div>
+        <div>Discord: <b>discord.gg/palovmc</b></div>
+      </div>
+      <div class="soc">
+        <span class="lab">Server Manzili</span>
+        <b id="ipf">play.palovmc.uz</b>
+        <a class="btn g" href="#top">⬆ Tepaga Qaytish</a>
+      </div>
+    </div>
+    <small>PalovMC loyihasi Mojang AB yoki Microsoft bilan bog'liq emas. Barcha mablag'lar server xostingi va rivoji uchun sarflanadi.</small>
+  </div>
+</footer>
+
+<!-- Suzuvchi Tugmalar -->
+<button class="btn r" id="qozon-trigger" type="button" title="Jahldor Qozonni chaqirish!">🍲🔥 QOZON BOOM</button>
+<button class="btn y" id="cartbtn" type="button">🛒 Savat <span class="n" id="cn">0</span></button>
+
+<!-- Savat Drawer -->
+<div id="veil"></div>
+<aside id="drawer" aria-label="Savat">
+  <h4><span>🛒 Xarid Savati</span><button class="btn" id="closec" type="button">X</button></h4>
+  <div>
+    <label for="nick">MINECRAFT NIKINGIZ (SKIN AVTO-CHIQADI)</label>
+    <div class="nick-row">
+      <img id="skin-head" src="https://mc-heads.net/avatar/Steve/48" alt="Skin">
+      <input id="nick" type="text" maxlength="16" placeholder="Masalan: Sardor_PvP" autocomplete="off">
+    </div>
+  </div>
+  <div>
+    <label for="promo">PROMOKOD (OSH20 yoki PALOVCRAFT30)</label>
+    <div class="promo-row">
+      <input id="promo" type="text" placeholder="PALOVCRAFT30" autocomplete="off">
+      <button class="btn y" id="apply-promo" type="button">OK</button>
+    </div>
+  </div>
+  <div class="lines" id="lines"></div>
+  <div class="tot"><span>JAMI TO'LOV:</span><span id="total">0 so'm</span></div>
+  <button class="btn g" id="checkout" type="button">⚡ Buyurtma Chekini Olish</button>
+  <div id="orderbox" hidden>
+    <textarea id="order" readonly></textarea>
+    <div style="display:flex;gap:10px;margin:10px 0;flex-wrap:wrap">
+      <button class="btn y" id="copyorder" type="button">📋 Chekni Nusxalash</button>
+    </div>
+    <div class="note">Chek nusxalandi! Endi uni Telegram (@PalovMC_Admin) ga yuboring.</div>
+  </div>
+</aside>
+
+<!-- Qushlardan Qoching Mini-O'yin Oynasi -->
+<div id="game" role="dialog" aria-label="Oshpaz Bobo O'yini">
+  <div class="gp" id="gp">
+    <div class="top"><h3>👨‍🍳 Oshpaz Bobo: Qushlardan Qoching!</h3><button class="btn" id="gx" type="button">X</button></div>
+    <canvas id="gc"></canvas>
+    <div class="ctl"><button class="btn g" id="bj" type="button">⬆ Sakrash (Space)</button><button class="btn y" id="bd" type="button">⬇ Egilish (Down)</button></div>
+    <p>Ehtiyot bo'ling! Agar qushga urilsangiz, <b>Jahldor Qozon-Bomba</b> chiqib butun saytni portlatib yuboradi!</p>
+  </div>
+</div>
+
+<!-- Portlash qatlamlari -->
+<div id="scorch"></div>
+<div id="flash"></div>
+<div id="boomhud" hidden></div>
+<canvas id="potc" width="160" height="150" aria-hidden="true"></canvas>
+<div id="tip"></div>
+<div id="toast" aria-live="polite"></div>
+<div id="xp" aria-hidden="true"><div class="lv" id="lv">0</div><div class="bar"><div class="fill" id="fill"></div></div></div>
+
+<script>
+(function(){
+  var CONFIG={ip:"play.palovmc.uz",saleEnd:"2026-11-01T23:59:59+05:00",discount:30};
+
+  /* 6 ta Milliy + Minecraft Donat Darajalari */
+  var RANKS=[
+    {id:"zirvak",name:"ZIRVAK [VIP]",c:"#55ff55",old:20000,price:10000,sp:"carrot",perks:["Chatda chiroyli [ZIRVAK] prefiks","Har 24 soatda /kit zirvak","/feed va /heal buyruqlari","3 ta uy nuqtasi (/sethome)"]},
+    {id:"lazer",name:"LAZER [PLUS]",c:"#55ffff",old:40000,price:20000,sp:"rice",perks:["Barcha ZIRVAK imkoniyatlari","Kuchaytirilgan /kit lazer","/ec (Ko'chma Ender Sandiq) va /craft","O'lganda XP saqlanib qoladi"]},
+    {id:"devzira",name:"DEVZIRA [MVP]",c:"#ffd23f",old:70000,price:35000,sp:"meat",hot:true,perks:["/fly — Serverda erkin uchish!","Maxsus /kit devzira (Neterit)","/repair all — Buyumlarni tuzatish","+25,000 PalovCoins sovg'a"]},
+    {id:"toyoshi",name:"TO'Y OSHI",c:"#ff922b",old:120000,price:60000,sp:"qozon",perks:["/god — O'lmaslik rejimi","/kit toyoshi (Totemlar + Neterit)","O'lganda buyumlar tushmaydi!","+60,000 PalovCoins + 3 Keys"]},
+    {id:"oshpaz",name:"BOSH OSHPAZ",c:"#ff5555",old:190000,price:95000,sp:"crown",perks:["/ban, /mute, /kick (Nazorat)","/day, /night, /sun — Ob-havo","/vanish va /speed 1-5 tezlik","Maxsus Admin-Chatga kirish"]},
+    {id:"xon",name:"PALOV XONI",c:"#c57bff",old:320000,price:159000,sp:"crown",top:true,perks:["Serverga kirganda chaqmoq va e'lon!","/kit xon (Xon Qilichi: O'tkirlik VII)","Cheklangan /gm 1 va Shaxsiy Prefix","Maxsus Pet: Jahldor Qozoncha","+250,000 Coins + 10 ta Keys!"]}
+  ];
+
+  /* 9 ta Inventar Buyumlari */
+  var ITEMS=[
+    {id:"dia",name:"Olmos To'plami x64",sp:"gem",old:30000,c:"#55ffff",lore:["64 dona sof olmos","Zirh va qurollar uchun","Darhol inventarga tushadi"]},
+    {id:"zum",name:"Zumrad Boylik x64",sp:"emerald",old:24000,c:"#55ff55",lore:["64 dona zumrad","Savdogarlar bilan savdo uchun"]},
+    {id:"apl",name:"Oltin Olma x16",sp:"apple",old:22000,c:"#ffd23f",lore:["16 dona sehrli oltin olma","PvP janglarda jon saqlovchi"]},
+    {id:"plv",name:"Choyxona Palovi x32",sp:"qozon",old:18000,c:"#ffb347",lore:["Cheksiz to'yimlilik va Kuch II","O'zbek milliy super-taomi"]},
+    {id:"key",name:"Afsonaviy Keys x5",sp:"key",old:35000,c:"#ffd23f",lore:["5 ta Donat va Qurol kaliti","Ichidan PALOV XONI tushishi mumkin!"]},
+    {id:"pot",name:"Qozon Iksiri x10",sp:"potion",old:15000,c:"#ff77c8",lore:["Tezlik III + Sakrash II","15 daqiqa davom etadi"]},
+    {id:"swd",name:"Xon Qilichi (MAX)",sp:"sword",old:45000,c:"#55ffff",lore:["Sharpness VII • Unbreaking V","Fire Aspect III • Mending"]},
+    {id:"pck",name:"Giper Kirka (3x3)",sp:"pick",old:40000,c:"#55ffff",lore:["3x3 blokni birdan qaziydi!","Efficiency VI • Fortune IV"]},
+    {id:"cht",name:"Unban / Razban",sp:"chest",old:30000,c:"#ff6666",lore:["Qoidabuzarlikdan to'liq ozod qilish","Avtomatik 1 daqiqada ochiladi"]}
+  ];
+  ITEMS.forEach(function(i){i.price=Math.round(i.old*(100-CONFIG.discount)/100/100)*100});
+
+  var $=function(s,r){return (r||document).querySelector(s)};
+  var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+  var clamp=function(v,a,b){return Math.max(a,Math.min(b,v))};
+  var fmt=function(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g," ")+" so'm"};
+
+  /* ====== 10x10 PIKSEL SPRITELAR GENERATORI ====== */
+  var SPR={
+    gem:{p:{o:"#0b3b3f",a:"#c9fff9",b:"#4de8dc",c:"#1c9a98"},m:["..........","...oooo...","..oabbbo..",".oabbbbco.","oabbbbbbco",".obbbbbco.","..obbbco..","...obbo...","....oo....",".........."]},
+    emerald:{p:{o:"#0a3318",a:"#b6ffcf",b:"#2fd46b",c:"#12803a"},m:["..........","..oooooo..",".oaabbbbo.","oaabbbbbco","obbbbbbbco","obbbbbbcco",".occcccco.","..oooooo..","..........",".........."]},
+    ingot:{p:{o:"#4a3000",a:"#fff3b0",b:"#ffd23f",c:"#c98c10"},m:["..........","..........","....oooooo","...oaaabbo","..oabbbbco",".oabbbbcco",".occcccco.","..oooooo..","..........",".........."]},
+    sword:{p:{o:"#0b2b30",a:"#e6fffd",b:"#4de8dc",d:"#7a4a1e"},m:["........oo",".......oao","......oabo",".....oabo.",".o..oabo..",".oooabo...","..oobo....","..odo.....",".odo......",".oo......."]},
+    pick:{p:{o:"#0b2b30",a:"#e6fffd",b:"#4de8dc",c:"#1c9a98",d:"#7a4a1e"},m:["..oooooo..",".oabbbbco.","oab.oo.bco","o..oddo..o","...oddo...","...oddo...","...oddo...","...oddo...","...oooo...",".........."]},
+    chest:{p:{o:"#2a1608",b:"#b8782e",y:"#ffd23f"},m:["..........",".oooooooo.",".obbbbbbo.",".obbbbbbo.",".oooyyooo.",".obbyybbo.",".obbbbbbo.",".obbbbbbo.",".oooooooo.",".........."]},
+    key:{p:{o:"#4a3000",a:"#fff3b0",b:"#ffd23f"},m:["..........","..oooo....",".oaaabo...",".oa..bo...",".oabbbo...","..oooo....","...ob.....","...obbo...","...ob.....","...obbo..."]},
+    potion:{p:{o:"#2a0a1c",n:"#cfd8dc",a:"#ffc2e6",b:"#ff4fa3",c:"#a1175f"},m:["...oooo...","....nn....","....nn....","...onno...","..oaabbo..",".oaabbbbo.",".obbbbbbo.",".obbbbbco.","..occcco..","...oooo..."]},
+    apple:{p:{o:"#4a3000",g:"#3ddc4a",a:"#fff3b0",b:"#ffd23f",c:"#c98c10"},m:["......og..","..oooogg..",".oaabbbbo.","oaabbbbbbo","obbbbbbbbo","obbbbbbbco",".obbbbbco.","..obbbco..","...oooo...",".........."]},
+    qozon:{p:{o:"#0d0d0d",s:"#ffffff",y:"#ffd23f",r:"#ff5500",c:"#5a5a5a",b:"#262626"},m:["..s..s....","...s..s...",".oooooooo.","oyyryyyyyo","oyyyyryyyo",".occcccco.",".obbbbbbo.","..obbbbo..","..oo..oo..",".........."]},
+    crown:{p:{o:"#4a3000",y:"#ffd23f",r:"#ff3030"},m:["..........","o...o...o.","oo.ooo.oo.","oyoyyyoyo.","oyyyyyyyyo","oyyryyryyo","oyyyyyyyyo",".oooooooo.","..........",".........."]},
+    rice:{p:{o:"#555555",w:"#ffffff",s:"#d9e2ec"},m:["..........","...oooo...","..owwwwo..",".owswswso.","owwwwwwwwo","owswswswso",".owwwwwwo.","..oooooo..","..........",".........."]},
+    carrot:{p:{o:"#4a2000",g:"#4ec21f",a:"#ff922b",b:"#ff5500"},m:[".......gg.","......gg..","....ooao..","...oaaabo.","..oaaabo..",".oaaabo...","oaaabo....","oabo......","oo........",".........."]},
+    meat:{p:{o:"#3b0d0d",r:"#d63a2f",p:"#ff9999",w:"#ffffff"},m:["..ooooo...",".orrrrro..","orrppprro.","orrpwwrro.","orrrwwrro.",".orrrrrro.","..ooooooo.","......owwo","......oooo",".........."]}
+  };
+  var cache={};
+  function spr(name,pal){
+    var key=name+(pal?JSON.stringify(pal):"");if(cache[key])return cache[key];
+    var d=SPR[name],cv=document.createElement("canvas");cv.width=cv.height=10;var x=cv.getContext("2d");
+    d.m.forEach(function(row,y){for(var i=0;i<10;i++){var ch=row[i];if(ch!=="."){x.fillStyle=(pal&&pal[ch])||d.p[ch]||"#fff";x.fillRect(i,y,1,1)}}});
+    return cache[key]=cv.toDataURL();
+  }
+  function img(name,w,pal,cls){return '<img class="sp '+(cls||"")+'" src="'+spr(name,pal)+'" width="'+w+'" height="'+w+'" alt="">'}
+  $("#navsp").src=spr("qozon");
+
+  /* ====== ZAMIN CHIZIG'I (GRASS BLOCK TILE) ====== */
+  (function(){
+    var cv=document.createElement("canvas");cv.width=16;cv.height=12;var x=cv.getContext("2d"),s=7;
+    function r(){s=(s*9301+49297)%233280;return s/233280}
+    var gr=["#5fb03a","#6be04a","#4e9a2e","#7cf05a"],dr=["#85592f","#6e4724","#946238","#5c3b1e"];
+    for(var i=0;i<16;i++){var h=3+(r()>.6?1:0)+(r()>.85?1:0);
+      for(var j=0;j<12;j++){x.fillStyle=j<h?gr[Math.floor(r()*gr.length)]:dr[Math.floor(r()*dr.length)];x.fillRect(i,j,1,1)}}
+    var url="url("+cv.toDataURL()+")";
+    $$(".ground").forEach(function(g){g.style.backgroundImage=url});
+  })();
+
+  /* ====== DONAT KARTALARINI CHIZISH ====== */
+  $("#ranks").innerHTML=RANKS.map(function(rk,i){
+    var pal=rk.sp==="crown"?{y:rk.c}:null;
+    return '<article class="rank rv'+(rk.top?" top":"")+'" style="--c:'+rk.c+';--rd:'+(i*.07)+'s">'+
+      (rk.top?'<div class="glint"></div><div class="tagr" style="background:#8a2be2">👑 ENG YUQORI</div>':"")+
+      (rk.hot?'<div class="tagr">🔥 TOP SOTUV</div>':"")+
+      '<h3>'+img(rk.sp,34,pal)+rk.name+'</h3>'+
+      '<div class="chat">&lt;<b>['+rk.name.split(" ")[0]+'] <span class="nm">Sardor_PvP</span></b>&gt; Oshga marhamat!</div>'+
+      '<ul class="perks">'+rk.perks.map(function(p){return "<li>"+p+"</li>"}).join("")+'</ul>'+
+      '<div class="price-row"><div class="price"><del>'+fmt(rk.old)+'</del>'+fmt(rk.price)+'</div>'+
+      '<button class="btn g" type="button" data-add="r:'+rk.id+'">Savatga</button></div></article>';
+  }).join("");
+
+  /* ====== DO'KON INVENTARI ====== */
+  var sel=ITEMS[0];
+  $("#slots").innerHTML=ITEMS.map(function(it,i){
+    return '<button class="slot" type="button" data-sel="'+it.id+'" style="--i:'+i+'"><div class="off">-'+CONFIG.discount+'%</div>'+img(it.sp,60)+'<span>'+it.name+'</span><span class="pc">'+fmt(it.price)+'</span></button>';
+  }).join("");
+  function showDet(){
+    $("#det").style.setProperty("--c",sel.c);
+    $("#det").innerHTML='<div class="big">'+img(sel.sp,120)+'</div><h3>'+sel.name+'</h3><ul>'+sel.lore.map(function(l){return "<li>✦ "+l+"</li>"}).join("")+'</ul>'+
+      '<div class="pr"><span class="old">'+fmt(sel.old)+'</span><span class="now">'+fmt(sel.price)+'</span></div>'+
+      '<button class="btn g" type="button" data-add="i:'+sel.id+'">🛒 Savatga Qo\'shish</button>';
+    $$(".slot").forEach(function(s){s.classList.toggle("sel",s.getAttribute("data-sel")===sel.id)});
+  }
+  showDet();
+
+  /* ====== 🍲 QOZON-CRAFT (3x3 CRAFTING TABLE) ====== */
+  var INGREDIENTS=[
+    {id:"rice",name:"Devzira Guruch",sp:"rice"},
+    {id:"carrot",name:"Sariq Sabzi",sp:"carrot"},
+    {id:"meat",name:"Qo'y Go'shti",sp:"meat"},
+    {id:"ingot",name:"Oltin Quymasi",sp:"ingot"}
+  ];
+  var activeIng="rice",cState=[null,null,null,null,null,null,null,null,null];
+  function renderCraft(){
+    $("#pantry").innerHTML=INGREDIENTS.map(function(ig){
+      return '<button type="button" class="p-item'+(activeIng===ig.id?" active":"")+'" data-ing="'+ig.id+'">'+img(ig.sp,26)+'<span>'+ig.name+'</span></button>';
+    }).join("");
+    $("#cgrid").innerHTML=cState.map(function(cell,idx){
+      return '<button type="button" class="c-slot" data-cslot="'+idx+'">'+(cell?img(cell,42):"")+'</button>';
+    }).join("");
+    var hasRice=cState.indexOf("rice")>-1,hasCarrot=cState.indexOf("carrot")>-1,hasMeat=cState.indexOf("meat")>-1;
+    var cout=$("#cout");
+    if(hasRice&&hasCarrot&&hasMeat){
+      cout.classList.add("ready");
+      cout.innerHTML=img("qozon",54);
+    }else{
+      cout.classList.remove("ready");
+      cout.innerHTML="";
+    }
+  }
+  renderCraft();
+
+  $("#pantry").addEventListener("click",function(e){
+    var b=e.target.closest("[data-ing]");if(!b)return;
+    activeIng=b.getAttribute("data-ing");blip(500,.08);renderCraft();
+  });
+  $("#cgrid").addEventListener("click",function(e){
+    var b=e.target.closest("[data-cslot]");if(!b)return;
+    var idx=+b.getAttribute("data-cslot");
+    cState[idx]=cState[idx]===activeIng?null:activeIng;
+    blip(420,.08);renderCraft();
+  });
+  $("#clear-craft").addEventListener("click",function(){cState=[null,null,null,null,null,null,null,null,null];blip(300,.1);renderCraft()});
+  $("#auto-recipe").addEventListener("click",function(){
+    cState=["rice","carrot","meat",null,"qozon" in SPR?null:null,null,null,null,null];
+    cState=[null,"rice",null,"carrot","meat",null,null,null,null];
+    blip(680,.15,"triangle");renderCraft();
+    toast("Retsept terildi!","Endi o'ngdagi tayyor Qozon ustiga bosing!","qozon");
+  });
+  $("#cout").addEventListener("click",function(){
+    if(!this.classList.contains("ready")){toast("Retsept to'liq emas!","Guruch + Sabzi + Go'sht qo'ying","carrot");return}
+    promoDiscount=30;promoCode="PALOVCRAFT30";
+    $("#promo").value="PALOVCRAFT30";
+    renderCart();
+    blip(880,.3,"triangle",.09);
+    toast("QOZON-CRAFT YUTUG'I!","PALOVCRAFT30 (-30% chegirma) savatga qo'llandi!","qozon");
+    openCart(true);
+  });
+
+  /* ====== TOOLTIP ====== */
+  var tip=$("#tip");
+  document.addEventListener("pointermove",function(e){
+    var s=e.target.closest&&e.target.closest(".slot");
+    if(!s||e.pointerType==="touch"){tip.style.display="none";return}
+    var it=ITEMS.filter(function(i){return i.id===s.getAttribute("data-sel")})[0];
+    tip.innerHTML='<div class="t" style="color:'+it.c+'">'+it.name+'</div>'+it.lore.map(function(l){return '<div class="l">'+l+'</div>'}).join("")+'<div class="p">'+fmt(it.price)+'</div>';
+    tip.style.display="block";
+    var x=e.clientX+18,y=e.clientY-10;if(x+tip.offsetWidth>innerWidth-8)x=e.clientX-tip.offsetWidth-14;
+    tip.style.transform="translate("+x+"px,"+y+"px)";
+  });
+
+  /* ====== OVOZ SINTEZATORI ====== */
+  var ac=null,snd=true;
+  function blip(f,d,t,v){if(!snd)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();var o=ac.createOscillator(),g=ac.createGain();o.type=t||"square";o.frequency.setValueAtTime(f,ac.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.5,ac.currentTime+d);g.gain.setValueAtTime(v||.05,ac.currentTime);g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+  $("#mute").addEventListener("click",function(){snd=!snd;this.textContent=snd?"SND":"OFF";blip(500,.1)});
+
+  /* ====== MINECRAFT ACHIEVEMENT TOAST ====== */
+  var got={};
+  function toast(title,text,icon){
+    var el=document.createElement("div");el.className="tst";
+    el.innerHTML='<div class="ic">'+img(icon||"ingot",30)+'</div><div><b>'+title+'</b><span>'+text+'</span></div>';
+    var tc=$("#toast");while(tc.children.length>=2)tc.firstChild.remove();tc.appendChild(el);
+    requestAnimationFrame(function(){requestAnimationFrame(function(){el.classList.add("in")})});
+    blip(660,.22,"triangle",.06);
+    setTimeout(function(){el.classList.remove("in");setTimeout(function(){el.remove()},550)},3600);
+  }
+  function once(k,t,x,i){if(!got[k]){got[k]=1;toast(t,x,i)}}
+
+  /* ====== SAVAT, JONLI SKIN & PROMOKOD ====== */
+  var cart=[],promoDiscount=0,promoCode="";
+  function find(ref){var p=ref.split(":");return p[0]==="r"?RANKS.filter(function(r){return r.id===p[1]})[0]:ITEMS.filter(function(r){return r.id===p[1]})[0]}
+  function add(ref){
+    var e=cart.filter(function(c){return c.ref===ref})[0];
+    if(e)e.q++;else cart.push({ref:ref,q:1});
+    renderCart();blip(540,.12);once("cart","Yutuq ochildi!","Birinchi savat","chest");
+    var b=$("#cartbtn");b.style.transform="scale(1.16)";setTimeout(function(){b.style.transform=""},150);
+  }
+  function unit(ref){return find(ref).price}
+  function renderCart(){
+    var n=cart.reduce(function(a,c){return a+c.q},0),raw=cart.reduce(function(a,c){return a+c.q*unit(c.ref)},0);
+    var finalTotal=Math.round(raw*(100-promoDiscount)/100);
+    $("#cn").textContent=n;
+    $("#total").textContent=fmt(finalTotal)+(promoDiscount?" (-"+promoDiscount+"%)":"");
+    $("#lines").innerHTML=cart.length?cart.map(function(c,i){var o=find(c.ref),pal=c.ref[0]==="r"&&o.sp==="crown"?{y:o.c}:null;
+      return '<div class="line">'+img(o.sp,36,pal)+'<div><b>'+o.name+'</b><div class="q"><button type="button" data-q="'+i+':-1">-</button><span>'+c.q+'</span><button type="button" data-q="'+i+':1">+</button></div></div><div class="lp">'+fmt(o.price*c.q)+'</div></div>'}).join(""):'<div class="empty">Savat bo\'sh. Rank yoki buyum tanlang!</div>';
+    $("#orderbox").hidden=true;
+  }
+  renderCart();
+  function openCart(v){$("#drawer").classList.toggle("open",v);$("#veil").classList.toggle("open",v)}
+  $("#cartbtn").addEventListener("click",function(){openCart(true);blip(380,.1)});
+  $("#closec").addEventListener("click",function(){openCart(false)});
+  $("#veil").addEventListener("click",function(){openCart(false)});
+
+  $("#nick").addEventListener("input",function(){
+    var v=this.value.trim()||"Sardor_PvP";
+    $$(".nm").forEach(function(n){n.textContent=v});
+    $("#skin-head").src="https://mc-heads.net/avatar/"+encodeURIComponent(v)+"/48";
+  });
+
+  $("#apply-promo").addEventListener("click",function(){
+    var code=$("#promo").value.trim().toUpperCase();
+    if(code==="PALOVCRAFT30"||code==="GIPER30"){
+      promoDiscount=30;promoCode=code;toast("Promokod Faol!","-30% chegirma qo'llandi!","qozon");
+    }else if(code==="OSH20"){
+      promoDiscount=20;promoCode=code;toast("Promokod Faol!","-20% chegirma qo'llandi!","ingot");
+    }else{
+      toast("Xato Promokod","OSH20 deb yozing yoki Qozon-Craft qiling!","key");return;
+    }
+    renderCart();
+  });
+
+  $("#lines").addEventListener("click",function(e){var b=e.target.closest("[data-q]");if(!b)return;var p=b.getAttribute("data-q").split(":"),i=+p[0];cart[i].q+=+p[1];if(cart[i].q<=0)cart.splice(i,1);renderCart();blip(420,.08)});
+  $("#checkout").addEventListener("click",function(){
+    if(!cart.length){toast("Savat bo'sh","Avval daraja yoki buyum tanlang","key");return}
+    var nk=$("#nick").value.trim();if(!nk){$("#nick").focus();toast("Nik kerak!","Minecraft nikingizni yozing","key");return}
+    var raw=cart.reduce(function(a,c){return a+c.q*unit(c.ref)},0);
+    var finalTotal=Math.round(raw*(100-promoDiscount)/100);
+    $("#order").value="🍲 PALOVMC RASMIY BUYURTMA\n👤 O'yinchi: "+nk+"\n"+(promoCode?"🎟 Promokod: "+promoCode+" (-"+promoDiscount+"%)\n":"")+"\n📦 Tanlanganlar:\n"+cart.map(function(c){var o=find(c.ref);return "• "+o.name+" x"+c.q+" = "+fmt(o.price*c.q)}).join("\n")+"\n\n💰 JAMI TO'LOV: "+fmt(finalTotal);
+    $("#orderbox").hidden=false;blip(720,.2,"triangle");once("order","Yutuq ochildi!","Buyurtma tayyor","ingot");
+  });
+
+  function copy(text,okMsg){
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text);
+    toast("Nusxalandi!",okMsg,"ingot");blip(800,.15);
+  }
+  $("#copyorder").addEventListener("click",function(){copy($("#order").value,"Buyurtma cheki nusxalandi")});
+  $("#copyip").addEventListener("click",function(){copy(CONFIG.ip,CONFIG.ip);once("ip","Yutuq ochildi!","Serverga tayyor","apple")});
+
+  document.addEventListener("click",function(e){
+    var a=e.target.closest("[data-add]");if(a){add(a.getAttribute("data-add"));return}
+    var s=e.target.closest("[data-sel]");if(s){sel=ITEMS.filter(function(i){return i.id===s.getAttribute("data-sel")})[0];showDet();blip(600,.08)}
+  });
+
+  /* ====== CHEGIRMA TAYMERI & LENTA ====== */
+  var end=new Date(CONFIG.saleEnd).getTime();
+  function cd(){var d=Math.max(0,end-Date.now()),s=Math.floor(d/1000),p=function(n){return String(n).padStart(2,"0")};
+    $("#cd").innerHTML=[["KUN",Math.floor(s/86400)],["SOAT",Math.floor(s%86400/3600)],["DAQ",Math.floor(s%3600/60)],["SON",s%60]].map(function(x){return "<div><b>"+p(x[1])+"</b><small>"+x[0]+"</small></div>"}).join("")}
+  cd();setInterval(cd,1000);
+
+  var tp="";for(var k=0;k<10;k++)tp+="<span>🔥 DEVZIRA SALE -"+CONFIG.discount+"%</span><i>◆</i><span>PALOVMC.UZ</span><i>◆</i><span>JAHLDOR QOZON</span><i>◆</i>";
+  $("#tape").innerHTML=tp;
+
+  /* ====== SCROLL REVEAL & 3D TILT ====== */
+  var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add("in");io.unobserve(en.target)}})},{threshold:.12});
+  $$(".rv").forEach(function(el){io.observe(el)});
+
+  $$(".rank").forEach(function(c){
+    c.addEventListener("pointermove",function(e){if(e.pointerType==="touch")return;var r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;c.style.setProperty("--ry",((x-.5)*14).toFixed(1)+"deg");c.style.setProperty("--rx",((.5-y)*14).toFixed(1)+"deg")});
+    c.addEventListener("pointerleave",function(){c.style.setProperty("--ry","0deg");c.style.setProperty("--rx","0deg")});
+  });
+
+  /* ====== KUN-SHOM-TUN PIKSEL OSMON + WARP SPEED ====== */
+  var sky=$("#sky"),sx=sky.getContext("2d"),SW=0,SH=0,PX=5,tt=0,scrollVel=0,lastScrollY=0;
+  var stops=[{top:[82,168,255],bot:[198,232,255]},{top:[78,44,128],bot:[255,148,88]},{top:[6,9,24],bot:[26,34,82]}];
+  function L(a,b,k){return a+(b-a)*k}
+  function mix(a,b,k){return [L(a[0],b[0],k),L(a[1],b[1],k),L(a[2],b[2],k)]}
+  function css(c,a){return "rgba("+Math.round(c[0])+","+Math.round(c[1])+","+Math.round(c[2])+","+(a==null?1:a)+")"}
+  function pal(t){return t<.5?[mix(stops[0].top,stops[1].top,t*2),mix(stops[0].bot,stops[1].bot,t*2)]:[mix(stops[1].top,stops[2].top,(t-.5)*2),mix(stops[1].bot,stops[2].bot,(t-.5)*2)]}
+  var seed=11;function rnd(){seed=(seed*9301+49297)%233280;return seed/233280}
+  var stars=[],clouds=[],mt1=[],mt2=[];
+  function skyInit(){
+    SW=Math.ceil(innerWidth/PX);SH=Math.ceil(innerHeight/PX);sky.width=SW;sky.height=SH;seed=11;
+    stars=[];for(var i=0;i<80;i++)stars.push({x:rnd()*SW,y:rnd()*SH*.65,p:rnd()*6});
+    clouds=[];for(var j=0;j<7;j++)clouds.push({x:rnd()*SW,y:SH*(.08+rnd()*.35),w:14+rnd()*18,s:.012+rnd()*.02});
+    var cols=Math.ceil(SW/3)+8;mt1=[];mt2=[];var h1=SH*.3,h2=SH*.18;
+    for(var m=0;m<cols;m++){h1=clamp(h1+(rnd()-.5)*5,SH*.14,SH*.42);h2=clamp(h2+(rnd()-.5)*4,SH*.08,SH*.3);mt1.push(Math.round(h1));mt2.push(Math.round(h2))}
+  }
+  function drawSky(){
+    var y=scrollY,max=Math.max(1,document.documentElement.scrollHeight-innerHeight),t=clamp(y/max,0,1),p=pal(t),band=3;
+    for(var by=0;by<SH;by+=band){sx.fillStyle=css(mix(p[0],p[1],by/SH));sx.fillRect(0,by,SW,band)}
+    var night=clamp((t-.4)/.35,0,1),sun=clamp(t/.75,0,1);
+    var warp=Math.min(10,Math.abs(scrollVel)*.15);
+    for(var i=0;i<stars.length;i++){
+      var s=stars[i],a=Math.max(night*(.45+.55*Math.sin(tt*.003+s.p)),warp>.8?.5:0);
+      if(a>.02){sx.fillStyle="rgba(255,255,255,"+a.toFixed(2)+")";sx.fillRect(Math.floor(s.x),Math.floor(s.y),1,Math.max(1,Math.round(warp)))}
+    }
+    if(sun<.98){var sx0=SW*(.82-.5*sun),sy0=SH*(.14+.62*Math.pow(sun,1.4));
+      sx.fillStyle="rgba(255,240,170,.35)";sx.fillRect(sx0-7,sy0-7,14,14);sx.fillStyle="#fff3a0";sx.fillRect(sx0-5,sy0-5,10,10);sx.fillStyle="#ffd23f";sx.fillRect(sx0-4,sy0-4,8,8)}
+    if(t>.48){var v=clamp((t-.48)/.52,0,1),mx=SW*(.18+.5*v),my=SH*(.55-.4*Math.min(1,v*1.5));
+      sx.fillStyle="#e9edf7";sx.fillRect(mx-4,my-4,8,8);sx.fillStyle="#b9c2d8";sx.fillRect(mx-2,my-1,2,2);sx.fillRect(mx+1,my+2,2,2)}
+    var cc=t<.5?mix([255,255,255],[255,205,170],t*2):mix([255,205,170],[70,80,130],(t-.5)*2),ca=.9-night*.45;
+    for(var c=0;c<clouds.length;c++){var cl=clouds[c],cx0=((cl.x+tt*cl.s)%(SW+50))-25;
+      sx.fillStyle=css(cc,ca);sx.fillRect(cx0,cl.y,cl.w,3);sx.fillRect(cx0+3,cl.y-2,cl.w*.55,2)}
+    var far=mix([100,150,120],[10,16,36],clamp(t*1.3,0,1)),near=mix([62,122,70],[6,10,24],clamp(t*1.3,0,1)),sh=Math.floor(y*.01);
+    sx.fillStyle=css(far);for(var a2=0;a2<mt1.length;a2++)sx.fillRect(a2*3-(sh%12),SH-mt1[a2],3,mt1[a2]);
+    sx.fillStyle=css(near);for(var b2=0;b2<mt2.length;b2++)sx.fillRect(b2*3-(sh*2%12),SH-mt2[b2],3,mt2[b2]);
+    scrollVel*=.88;
+  }
+  skyInit();drawSky();
+  (function loop(ts){tt=ts||0;drawSky();requestAnimationFrame(loop)})();
+
+  var tape=$("#tape"),tick=false;
+  function onScroll(){
+    tick=false;scrollVel=scrollY-lastScrollY;lastScrollY=scrollY;
+    var max=Math.max(1,document.documentElement.scrollHeight-innerHeight),p=clamp(scrollY/max,0,1);
+    $("#fill").style.width=(p*100)+"%";$("#lv").textContent=Math.floor(p*30)+xpn;
+    tape.style.transform="translateX("+(-scrollY*.4%800)+"px)";
+  }
+  addEventListener("scroll",function(){if(!tick){tick=true;requestAnimationFrame(onScroll)}},{passive:true});
+
+  /* ====== GIPER-IMPULS ZARRALAR, SHOCKWAVE & XP SHARLARI ====== */
+  var fx=$("#fx"),fc=fx.getContext("2d"),FW=0,FH=0,parts=[],orbs=[],waves=[],px=-999,py=-999,xpn=0,last=0;
+  function fxSize(){FW=fx.width=innerWidth;FH=fx.height=innerHeight}
+  fxSize();
+  addEventListener("resize",function(){fxSize();skyInit();drawSky()});
+  addEventListener("pointermove",function(e){px=e.clientX;py=e.clientY},{passive:true});
+  addEventListener("pointerdown",function(e){
+    px=e.clientX;py=e.clientY;
+    if(e.target.closest("button,a,input,textarea,.slot,#drawer"))return;
+    burst(e.clientX,e.clientY);
+  },{passive:true});
+  var BC=["#5fb03a","#85592f","#ffd23f","#ff7b1a","#4de8dc"];
+  function burst(x,y){
+    waves.push({x:x,y:y,r:8,a:1});
+    for(var i=0;i<18;i++)parts.push({x:x,y:y,vx:(Math.random()-.5)*8,vy:-Math.random()*7-1,s:5+Math.random()*5,c:BC[Math.floor(Math.random()*BC.length)],l:1});
+    blip(190+Math.random()*70,.08,"square",.04);
+  }
+  function spawnOrb(){if(orbs.length>=6)return;orbs.push({x:Math.random()*FW,y:FH*(.25+Math.random()*.6),ph:Math.random()*6,t:0,got:false})}
+  setInterval(spawnOrb,1600);for(var q=0;q<4;q++)spawnOrb();
+
+  function fxLoop(ts){
+    var dt=Math.min(40,ts-last)/16;last=ts;fc.clearRect(0,0,FW,FH);
+    for(var w=waves.length-1;w>=0;w--){
+      var wv=waves[w];wv.r+=14*dt;wv.a-=.035*dt;
+      if(wv.a<=0){waves.splice(w,1);continue}
+      fc.strokeStyle="rgba(255,210,63,"+wv.a+")";fc.lineWidth=3;
+      fc.strokeRect(wv.x-wv.r,wv.y-wv.r,wv.r*2,wv.r*2);
+    }
+    for(var i=parts.length-1;i>=0;i--){
+      var p=parts[i];p.vy+=(p.g==null?.35:p.g)*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.l-=(p.d||.02)*dt;
+      if(p.l<=0){parts.splice(i,1);continue}
+      fc.globalAlpha=Math.min(1,p.l*1.5);fc.fillStyle=p.c;fc.fillRect(p.x|0,p.y|0,p.s,p.s);
+      fc.fillStyle="rgba(0,0,0,.25)";fc.fillRect((p.x|0)+p.s-2,(p.y|0)+p.s-2,2,2);
+    }
+    fc.globalAlpha=1;
+    for(var pi=puffs.length-1;pi>=0;pi--){
+      var pf=puffs[pi];pf.t+=dt;if(pf.t<0)continue;
+      var pk=pf.t/pf.life;if(pk>=1){puffs.splice(pi,1);continue}
+      pf.x+=pf.vx*dt;pf.y+=pf.vy*dt;
+      var rr=pf.r*(.3+.7*Math.min(1,pk*3)),cell=8,pa=pk<.55?1:1-(pk-.55)/.45;
+      fc.globalAlpha=pa;
+      for(var gx=-rr;gx<=rr;gx+=cell){for(var gy=-rr;gy<=rr;gy+=cell){
+        if(gx*gx+gy*gy<=rr*rr){fc.fillStyle=((Math.round((pf.x+gx)/cell)+Math.round((pf.y+gy)/cell))%3===0)?"#ffd23f":"#ffffff";
+          fc.fillRect(Math.round((pf.x+gx)/cell)*cell,Math.round((pf.y+gy)/cell)*cell,cell,cell)}}}
+    }
+    fc.globalAlpha=1;
+    for(var j=orbs.length-1;j>=0;j--){
+      var o=orbs[j],dx=px-o.x,dy=py-o.y,d=Math.sqrt(dx*dx+dy*dy);
+      o.t+=dt;if(d<115)o.got=true;
+      if(o.got){o.x+=dx*.17*dt;o.y+=dy*.17*dt;if(d<14){orbs.splice(j,1);xpn++;$("#xpc").textContent="XP: "+xpn;blip(900+xpn*10,.11,"triangle",.05);var xe=$("#xp");xe.classList.add("flash");setTimeout(function(){xe.classList.remove("flash")},120);onScroll();if(xpn===5)toast("Yutuq ochildi!","XP Master (+5 XP)","apple");continue}}
+      else{o.y+=Math.sin(o.t*.04+o.ph)*.35*dt-.12*dt;o.x+=Math.cos(o.t*.03+o.ph)*.3*dt}
+      var pulse=.5+.5*Math.sin(o.t*.12+o.ph);
+      fc.fillStyle="rgba(150,255,60,"+(.18+.12*pulse)+")";fc.fillRect((o.x|0)-12,(o.y|0)-12,24,24);
+      fc.fillStyle=pulse>.5?"#b9ff4a":"#6ee03a";fc.fillRect((o.x|0)-6,(o.y|0)-6,12,12);
+    }
+    requestAnimationFrame(fxLoop);
+  }
+  requestAnimationFrame(fxLoop);
+
+  /* ====== OSHPAZ BOBO O'YINI + JAHLDOR QOZON-BOMBA VA BUTUN SAYT PORTLASHI ====== */
+  var gm=$("#game"),gp=$("#gp"),gc=$("#gc"),g2=gc.getContext("2d"),GW=640,GH=240,GY=196,PXL=70,gs=null,graf=0,glast=0,wrecked=false;
+  gc.width=GW;gc.height=GH;
+  var puffs=[];
+  var BOOM="nav .brand,nav .links,.online-pill,.xpc,.mute,.season-badge,.logo span,.plate,.ip,.cta .btn,.hint-box,.ground,.tapew,.sec-h > *,.rank,.gui,.slot,.det,.craft-gui,.step,footer .soc,footer small,#cartbtn,#qozon-trigger,#xp";
+
+  function noise(dur,vol,f0,f1){
+    if(!snd)return;
+    try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+      var n=Math.floor(ac.sampleRate*dur),b=ac.createBuffer(1,n,ac.sampleRate),d=b.getChannelData(0);
+      for(var i=0;i<n;i++)d[i]=Math.random()*2-1;
+      var src=ac.createBufferSource();src.buffer=b;
+      var fl=ac.createBiquadFilter();fl.type="lowpass";fl.frequency.setValueAtTime(f0,ac.currentTime);fl.frequency.exponentialRampToValueAtTime(f1,ac.currentTime+dur);
+      var g=ac.createGain();g.gain.setValueAtTime(vol,ac.currentTime);g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+dur);
+      src.connect(fl);fl.connect(g);g.connect(ac.destination);src.start();
+    }catch(e){}
+  }
+
+  function newG(){return {st:"ready",t:0,score:0,speed:275,birds:[],spawn:1.1,py:0,vy:0,duck:false,fr:0,boss:false,warn:0,gx:0,
+    clouds:[{x:80,y:36},{x:320,y:62},{x:540,y:30}],fall:{x:0,y:0,vx:0,vy:0,r:0,t:0},bx:GW+60,bt:0,ft:0}}
+
+  function R(c,x,y,w,h){g2.fillStyle=c;g2.fillRect(Math.round(x),Math.round(y),w,h)}
+
+  function chef(x,y,f,air,dead){
+    R("#fff",x+2,y,20,4);R("#fff",x+4,y+4,16,6);R("#d6d6d6",x+4,y+10,16,2);
+    R("#e0a878",x+4,y+12,16,10);
+    if(dead){[6,14].forEach(function(o){R("#000",x+o,y+14,1,1);R("#000",x+o+2,y+14,1,1);R("#000",x+o+1,y+15,1,1);R("#000",x+o,y+16,1,1);R("#000",x+o+2,y+16,1,1)})}
+    else{R("#111",x+7,y+15,3,3);R("#111",x+14,y+15,3,3)}
+    R("#2a1608",x+6,y+19,12,3);
+    R("#fff",x+3,y+22,18,9);R("#e87a1a",x+3,y+28,18,3);
+    var a=Math.floor(f)%2;
+    R("#2b3a55",x+5,y+31,6,(air||a)?5:3);R("#2b3a55",x+13,y+31,6,(air||!a)?5:3);
+  }
+
+  function bird(x,y,f,sc,boss){
+    var c=boss?{b:"#e0a800",l:"#fff0a0",h:"#c98a00",w:"#a87000"}:{b:"#6b4a2e",l:"#c9a37a",h:"#4a3220",w:"#3a2616"};
+    g2.save();g2.translate(x,y);g2.scale(sc,sc);
+    R(c.b,6,6,18,9);R(c.l,8,12,14,3);R(c.h,1,4,9,8);R("#ffc928",-4,7,6,3);R("#fff",3,6,3,3);R("#000",3,7,1,2);R(c.b,24,8,6,4);
+    if(f%2<1)R(c.w,10,-3,10,9);else R(c.w,10,12,10,8);
+    g2.restore();
+  }
+
+  /* 🍲🔥 JAHLDOR QOZON-BOMBA PIXEL ART */
+  function pot(x,y,sc,flash,t){
+    var bob=Math.abs(Math.sin(t*14))*3;
+    g2.save();g2.translate(x,y-bob);g2.scale(sc,sc);
+    var bd=flash?"#ffffff":"#1f2229",rm=flash?"#ffe3e3":"#484e5c";
+    R("#111",-16,-6,8,6);R("#111",8,-6,8,6);
+    R(bd,-22,-36,44,32);R(rm,-26,-42,52,7);R(bd,-32,-34,6,12);R(bd,26,-34,6,12);
+    /* Qaynayotgan Palov tepasi */
+    R("#fff6cf",-18,-48,36,7);R("#ffd23f",-12,-54,24,7);R("#ff5500",-6,-50,4,4);R("#ff5500",6,-56,4,4);
+    /* G'azablangan ko'z va qoshlar */
+    R("#fff",-14,-30,9,8);R("#fff",5,-30,9,8);R("#e00",-10,-27,4,5);R("#e00",8,-27,4,5);
+    R("#ff3b1a",-15,-33,5,3);R("#ff3b1a",-10,-31,5,3);R("#ff3b1a",10,-33,5,3);R("#ff3b1a",5,-31,5,3);
+    R("#fff",-8,-18,16,4);
+    /* Bomba piligi */
+    R("#8a6a3a",16,-56,2,6);R(Math.floor(t*12)%2?"#ff3b1a":"#ffd23f",14,-62,6,6);
+    g2.restore();
+  }
+
+  var potc=$("#potc"),pcx=potc.getContext("2d");
+  function potDraw(t,flash){var sv=g2;g2=pcx;pcx.clearRect(0,0,160,150);pot(80,146,2.15,flash,t);g2=sv}
+
+  function spawnBird(){
+    var r=Math.random(),y=r<.4?GY-28:(r<.75?GY-42:GY-100);
+    gs.birds.push({x:GW+20,y:y,w:30,h:18,v:Math.random()*40,boss:false});
+  }
+  function hit(){
+    var s=gs;s.st="fall";s.fall={x:PXL,y:GY-s.py-18,vx:-170,vy:-400,r:0,t:0};s.duck=false;
+    $("#gx").hidden=true;blip(140,.35,"sawtooth",.1);noise(.25,.2,1800,200);
+  }
+
+  function gupd(dt){
+    var s=gs,i;
+    s.t+=dt;
+    s.clouds.forEach(function(c){c.x-=s.speed*.06*dt;if(c.x<-60)c.x=GW+20});
+    if(s.st==="ready")return;
+    if(s.st==="run"){
+      s.score+=s.speed*dt/10;s.speed=Math.min(560,275+s.score*.45);s.gx=(s.gx+s.speed*dt)%32;s.fr+=dt*12;
+      if(s.py>0||s.vy>0){s.vy-=(s.duck?3600:2200)*dt;s.py+=s.vy*dt;if(s.py<=0){s.py=0;s.vy=0}}
+      s.spawn-=dt;
+      if(!s.boss&&s.t>20&&s.warn===0){s.warn=1.1;s.spawn=99;toast("DIQQAT!","Gigant Qush yaqinlashmoqda!","apple");blip(200,.4,"sawtooth",.08)}
+      if(s.warn>0){s.warn-=dt;if(s.warn<=0){s.warn=-1;s.boss=true;s.birds.push({x:GW+20,y:GY-76,w:120,h:72,v:260,boss:true})}}
+      else if(!s.boss&&s.spawn<=0){spawnBird();s.spawn=(.85+Math.random()*.9)*Math.max(.55,300/s.speed)}
+      var low=s.duck&&s.py===0,px0=PXL+5,pw=14,ph=low?16:32,py0=GY-s.py-(low?18:34);
+      for(i=s.birds.length-1;i>=0;i--){
+        var b=s.birds[i];b.x-=(s.speed+b.v)*dt;
+        if(b.x<-150){s.birds.splice(i,1);continue}
+        var ins=b.boss?10:5;
+        if(px0<b.x+b.w-ins&&px0+pw>b.x+ins&&py0<b.y+b.h-ins+1&&py0+ph>b.y+ins-1){hit();break}
+      }
+    }else if(s.st==="fall"){
+      var f=s.fall;f.t+=dt;s.speed=Math.max(0,s.speed-500*dt);
+      f.vy+=1900*dt;f.x+=f.vx*dt;f.y+=f.vy*dt;f.r=Math.max(-1.5708,f.r-dt*8);
+      if(f.y>GY-12){f.y=GY-12;f.vy=-f.vy*.25;f.vx*=.6}
+      if(f.t>1.2){s.st="bomb";s.birds=[];s.bt=0;toast("QOCHING!","Jahldor Qozon-Bomba chiqdi!","qozon")}
+    }else if(s.st==="bomb"){
+      s.bt+=dt;var kk=Math.min(1,s.bt/1.1),ee=1-Math.pow(1-kk,3);
+      potc.style.display="block";potc.style.transform="translate(-50%,"+((1-ee)*112)+"%)";
+      potDraw(s.bt,false);
+      if(kk>=1){s.st="fuse";s.ft=0;noise(1.6,.15,7000,5000)}
+    }else if(s.st==="fuse"){
+      s.ft+=dt;var j=Math.min(10,s.ft*6);
+      gp.style.transform="translate("+((Math.random()-.5)*j)+"px,"+((Math.random()-.5)*j)+"px)";
+      potc.style.transform="translate(-50%,0) translate("+((Math.random()-.5)*j*2)+"px,"+((Math.random()-.5)*j)+"px) scale("+(1+s.ft*.15)+")";
+      potDraw(s.bt+s.ft,Math.floor(s.ft*(6+s.ft*10))%2===0);
+      if(s.ft>=1.55){s.st="done";explodeSite()}
+    }
+  }
+
+  function gdraw(){
+    var s=gs,i;
+    g2.clearRect(0,0,GW,GH);
+    var sk=["#8fd0ff","#a6daff","#bfe3ff","#d3ecff","#e4f4ff","#f0f9ff"];
+    for(i=0;i<6;i++)R(sk[i],0,i*34,GW,34);
+    s.clouds.forEach(function(c){R("#fff",c.x,c.y,44,8);R("#fff",c.x+8,c.y-6,26,6)});
+    R("#5fb03a",0,GY,GW,6);R("#4e9a2e",0,GY+4,GW,2);R("#85592f",0,GY+6,GW,GH-GY-6);
+    var fr=Math.floor(s.t*8);
+    s.birds.forEach(function(b){bird(b.x,b.y,fr,b.boss?4:1,b.boss)});
+    if(s.st==="ready"||s.st==="run"){
+      var air=s.py>0,low=s.duck&&!air,top=GY-s.py-36;
+      g2.save();if(low){g2.translate(0,GY);g2.scale(1.12,.56);g2.translate(0,-GY)}
+      chef(PXL,top,s.fr,air,false);g2.restore();
+    }else{
+      var f=s.fall;g2.save();g2.translate(f.x+12,f.y);g2.rotate(f.r);chef(-12,-18,0,true,true);g2.restore();
+    }
+    g2.textAlign="right";g2.font="12px 'Press Start 2P',monospace";g2.fillStyle="#2b3a55";
+    g2.fillText(String(Math.floor(s.score)).padStart(5,"0"),GW-12,22);
+    g2.textAlign="center";
+    if(s.st==="ready"){g2.fillStyle="#1b2a40";g2.font="11px 'Press Start 2P',monospace";g2.fillText("Boshlash: PROBEL yoki ekranga bosing",GW/2,90)}
+    if(s.st==="fall"){g2.fillStyle="#c0392b";g2.font="15px 'Press Start 2P',monospace";g2.fillText("OSHPAZ YIQILDI!",GW/2,70)}
+    if(s.st==="fuse"){g2.fillStyle="#c0392b";g2.font="15px 'Press Start 2P',monospace";g2.fillText("BIQIR-BIQIR... BOOM!",GW/2,70)}
+  }
+
+  function gloop(ts){
+    if(!gm.classList.contains("open"))return;
+    var dt=Math.min(.033,(ts-glast)/1000||0);glast=ts;
+    gupd(dt);if(gm.classList.contains("open"))gdraw();
+    graf=requestAnimationFrame(gloop);
+  }
+  function gjump(){
+    if(!gs)return;
+    if(gs.st==="ready"){gs.st="run";blip(440,.1);return}
+    if(gs.st==="run"&&gs.py===0&&gs.vy===0){gs.vy=575;gs.py=.01;blip(520,.12,"square",.04)}
+  }
+  function gduck(v){if(gs&&gs.st==="run")gs.duck=v}
+  function openGame(go){
+    if(wrecked)return;
+    gs=newG();if(go){gs.st="run";gs.spawn=1.5}
+    potc.style.display="none";$("#gx").hidden=false;gm.classList.add("open");document.documentElement.classList.add("lock");
+    glast=performance.now();cancelAnimationFrame(graf);graf=requestAnimationFrame(gloop);
+    blip(440,.1);
+  }
+  function closeGame(keepLock){
+    potc.style.display="none";cancelAnimationFrame(graf);gm.classList.remove("open");gp.style.transform="";
+    if(!keepLock)document.documentElement.classList.remove("lock");
+  }
+
+  /* 🧨 BEVOSITA JAHLDOR QOZONNI CHAQIRISH (O'YINSIZ HAM ISHLAYDI!) */
+  function summonDirectQozon(){
+    if(wrecked)return;
+    toast("VOY DOD!","Jahldor Qozon-Bomba uyg'ondi!","qozon");
+    var st=0;
+    potc.style.display="block";
+    noise(2.2,.15,6500,4500);
+    var iv=setInterval(function(){
+      st+=.035;
+      if(st<1.1){
+        var kk=Math.min(1,st/1.1),ee=1-Math.pow(1-kk,3);
+        potc.style.transform="translate(-50%,"+((1-ee)*112)+"%)";
+        potDraw(st,false);
+      }else if(st<2.5){
+        var ft=st-1.1,j=Math.min(12,ft*7);
+        potc.style.transform="translate(-50%,0) translate("+((Math.random()-.5)*j*2)+"px,"+((Math.random()-.5)*j)+"px) scale("+(1+ft*.18)+")";
+        potDraw(st,Math.floor(ft*14)%2===0);
+      }else{
+        clearInterval(iv);
+        explodeSite();
+      }
+    },35);
+  }
+
+  $("#qozon-trigger").addEventListener("click",summonDirectQozon);
+  $("#hero-boom").addEventListener("click",summonDirectQozon);
+  $("#logo-boom").addEventListener("click",summonDirectQozon);
+
+  $("#hint").addEventListener("click",function(){openGame(true)});
+  $("#gx").addEventListener("click",function(){closeGame()});
+  gc.addEventListener("pointerdown",function(e){e.preventDefault();gjump()});
+  $("#bj").addEventListener("pointerdown",function(e){e.preventDefault();gjump()});
+  var bd=$("#bd");
+  bd.addEventListener("pointerdown",function(e){e.preventDefault();gduck(true)});
+  ["pointerup","pointerleave","pointercancel"].forEach(function(ev){bd.addEventListener(ev,function(){gduck(false)})});
+  addEventListener("keydown",function(e){
+    if(!gm.classList.contains("open")){
+      if((e.key===" "||e.code==="Space")&&!e.repeat&&!wrecked&&!/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)&&!$("#drawer").classList.contains("open")){e.preventDefault();openGame(true)}
+      return;
+    }
+    var k=e.key;
+    if(k===" "||k==="ArrowUp"||k==="w"||k==="W"){e.preventDefault();gjump()}
+    else if(k==="ArrowDown"||k==="s"||k==="S"){e.preventDefault();gduck(true)}
+    else if(k==="Escape"&&gs&&(gs.st==="ready"||gs.st==="run")){closeGame()}
+  });
+  addEventListener("keyup",function(e){if(e.key==="ArrowDown"||e.key==="s"||e.key==="S")gduck(false)});
+
+  /* ====== 💥 BUTUN SAYTNI PORTLATISH VA QAYTA YIG'ISH ====== */
+  function explodeSite(){
+    if(wrecked)return;wrecked=true;
+    closeGame(true);
+    document.documentElement.classList.add("lock");document.body.classList.add("boomed");
+    var fl=$("#flash");fl.classList.remove("go");void fl.offsetWidth;fl.classList.add("go");
+    var cx=innerWidth/2,cy=innerHeight*.45;
+    noise(1.7,.65,2600,55);blip(65,.75,"sawtooth",.25);
+    puffs.push({x:cx,y:cy,r:140,t:0,life:70,vx:0,vy:-.2});
+    for(var pj=0;pj<22;pj++)puffs.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:26+Math.random()*85,t:-Math.random()*22,life:48+Math.random()*40,vx:(Math.random()-.5)*1.3,vy:-.3-Math.random()*.8});
+    var cols=["#ffffff","#ffd23f","#ff7b1a","#ff4444","#7cf05a","#ffffff"];
+    for(var i=0;i<160;i++){var a=Math.random()*6.283,v=3+Math.random()*15;
+      parts.push({x:cx,y:cy,vx:Math.cos(a)*v,vy:Math.sin(a)*v-3,s:6+Math.random()*11,c:cols[i%6],l:1.7,d:.012})}
+    var els=$$(BOOM).filter(function(el){return el.offsetParent!==null||getComputedStyle(el).position==="fixed"});
+    var list=els.map(function(el){
+      var r=el.getBoundingClientRect(),dx=r.left+r.width/2-cx,dy=r.top+r.height/2-cy,len=Math.hypot(dx,dy)||1,pw=320+Math.random()*780;
+      return {el:el,top:r.top+scrollY,tx:dx/len*pw+(Math.random()-.5)*240,ty:dy/len*pw+(Math.random()-.5)*240-60,rot:(Math.random()-.5)*900,sc:.45+Math.random()*.7};
+    });
+    list.forEach(function(o){
+      var e=o.el;e.style.animation="none";
+      e.style.transition="transform "+(.7+Math.random()*.5)+"s cubic-bezier(.1,.9,.25,1)";
+      e.style.transform="translate("+o.tx+"px,"+o.ty+"px) rotate("+o.rot+"deg) scale("+o.sc+")";
+    });
+    var sm=setInterval(function(){
+      for(var k=0;k<3;k++)parts.push({x:cx+(Math.random()-.5)*innerWidth*.7,y:innerHeight*(.5+Math.random()*.5),vx:(Math.random()-.5)*1.2,vy:-1-Math.random()*2,g:-.02,s:10+Math.random()*16,c:["#3a3a3a","#ffd23f","#2a2a2a","#ff7a1a"][Math.floor(Math.random()*4)],l:1.5,d:.008});
+    },70);
+    var n=5,hud=$("#boomhud");
+    function showHud(){hud.innerHTML="🍲💥 JAHLDOR QOZON PORTLADI!<br><span style=\"font-size:.55em;color:#ffd23f\">Sayt "+n+" soniyadan so'ng magnit kabi qayta yig'iladi...</span>"}
+    hud.hidden=false;showHud();
+    var cdI=setInterval(function(){n--;if(n>0)showHud()},1000);
+    setTimeout(function(){
+      clearInterval(sm);clearInterval(cdI);hud.hidden=true;document.body.classList.remove("boomed");
+      list.sort(function(a,b){return a.top-b.top});
+      list.forEach(function(o,i){
+        var e=o.el,d=i*20+Math.random()*75;
+        e.style.transition="transform .95s cubic-bezier(.3,1.6,.5,1) "+d+"ms";
+        e.style.transform="";
+        setTimeout(function(){e.style.transition="";e.style.transform="";e.style.animation=""},d+1150);
+      });
+      for(var k=0;k<8;k++)(function(k){setTimeout(function(){blip(300+k*95,.12,"square",.04)},k*135)})(k);
+      setTimeout(function(){document.documentElement.classList.remove("lock");wrecked=false;toast("Yutuq ochildi!","Qozon Portlashidan Omon Qoldingiz!","crown")},list.length*20+1350);
+    },5000);
+  }
+
+  onScroll();
+})();
+</script>
+</body>
+</html>
